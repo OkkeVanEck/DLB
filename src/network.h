@@ -3,16 +3,8 @@
 
 #include <netdb.h>
 #include <pthread.h>
+#include "error.h"
 
-
-/* Define network exit errors. */
-#define NET_SOCKET_CREATION_FAILED -1
-#define NET_SOCKET_BINDING_FAILED -2
-#define NET_SOCKET_LISTENING_FAILED -3
-#define NET_SERVER_ACCEPT_FAILED -4
-#define NET_LISTENER_CREATION_FAILED -5
-#define NET_LISTENER_CANCELATION_FAILED -6
-#define NET_LISTENER_JOIN_FAILED -7
 
 /* Struct for managing communication. */
 struct comms {
