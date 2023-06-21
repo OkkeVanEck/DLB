@@ -42,11 +42,11 @@ struct comms* create_socket() {
 
     /* Turn on listening for socket. */
     if ((listen(sockfd, 5)) != 0) {
-        printf("Listen failed..\n");
+        printf("Turning on listening failed..\n");
         exit(NET_SOCKET_LISTENING_FAILED);
     }
     else
-        printf("Server listening.\n");
+        printf("Server listening turned on.\n");
 
     /* Store all required info for communication and return. */
     struct comms* comm = malloc(sizeof (struct comms));
@@ -66,7 +66,7 @@ void* listener(void* data) {
     connfd = accept(comm->sockfd, (SA*)&sockaddr_cli, (socklen_t*)sizeof (sockaddr_cli));
     if (connfd < 0) {
         printf("Server accept failed..\n");
-        pthread_exit("NET_SERVER_ACCEPT_FAILED");
+        pthread_exit((void*)NET_SERVER_ACCEPT_FAILED);
     }
 
     /* Process connected client. */
@@ -82,8 +82,7 @@ struct comms* create_server() {
     struct comms* comm = create_socket();
 
     /* Create thread for listening to accept other clients. */
-    pthread_t listener_thread;
-    int retval = pthread_create(&listener_thread, NULL, listener, (void*)comm);
+    int retval = pthread_create(&comm->listener_thread, NULL, listener, (void*)comm);
     if (retval < 0) {
         printf("Creating listener thread failed..\n");
         exit(NET_LISTENER_CREATION_FAILED);
@@ -108,7 +107,10 @@ void close_server(struct comms* comm) {
     void* listener_retval;
     retval = pthread_join(comm->listener_thread, &listener_retval);
     if (retval < 0) {
-        // TODO: Read listener_retval en compare to error code. Remove JOIN_FAILED code..
+        /* Listener thread exited with an error, determine what happened. */
+        if (listener_retval == (void*)NET_SERVER_ACCEPT_FAILED)
+            printf("Listener has crashed on server accept..\n");
+
         printf("Listener thread join failed..\n");
         exit(NET_LISTENER_JOIN_FAILED);
     } else {
